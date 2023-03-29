@@ -1,0 +1,112 @@
+Project bobpod {}
+
+Table users as U {
+  id bigserial [pk, unique, increment]
+  full_name varchar [not null]
+  profile varchar
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    id
+  }
+}
+
+Table authentications as A {
+  id bigserial [pk, unique, increment]
+  user_id varchar [ref: > U.id, not null]
+  type varchar [not null, default: 'local']
+  target varchar [not null]
+  detail varchar [not null]
+  is_verified bool [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, type)
+  }
+}
+
+Table authentication_tokens {
+  id bigserial [pk, unique, increment]
+  user_id varchar [ref: > U.id, not null]
+  auth_id varchar [ref: > A.id, not null]
+  secret_code varchar [not null]
+  is_used bool [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+  expired_at timestamptz [not null, default: `now() + interval '15 minutes'`]
+
+  indexes {
+    id
+    user_id
+    auth_id
+    (id, user_id, auth_id)
+  }
+}
+
+Table sessions {
+  id uuid [pk, unique, increment]
+  user_id varchar [ref: > U.id, not null]
+  refresh_token varchar [not null]
+  user_agent varchar [not null]
+  client_ip varchar [not null]
+  is_blocked boolean [not null, default: false]
+  expires_at timestamptz [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    id
+    user_id
+    (id, user_id)
+  }
+}
+
+
+Table roles as R{
+  id bigserial [pk, unique, increment]
+  display_name varchar [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table user_roles {
+  id bigserial [pk, unique, increment]
+  role_id varchar [ref: > R.id, not null]
+  user_id varchar [ref: > U.id, not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    id
+    role_id
+    user_id
+    (id, user_id, role_id)
+  }
+}
+
+Table logs {
+  id uuid [pk, unique, increment]
+  user_id varchar [ref: > U.id, not null]
+  title varchar [not null]
+  type varchar [not null]
+  detail varchar [not null]
+  path varchar [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+
+Table password_rules {
+  id bigserial [pk, unique, increment]
+  rule_name varchar
+  pattram varchar
+  created_at timestamptz [not null, default: `now()`]
+}
+
+
+Table user_states {
+  id bigserial [pk, unique, increment]
+  state_name varchar [not null]
+  url varchar [not null]
+  detail varchar
+  created_at timestamptz [not null, default: `now()`]
+}
+
+
+
+
